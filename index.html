@@ -81,7 +81,41 @@
       <div class="glass-panel queue-panel">
         <div class="queue-header">
           <h3>Tracks Queue</h3>
-          <button class="clear-btn" onclick="clearPlaylist()">Clear All</button>
+          <div
+            class="queue-actions"
+            style="display: flex; gap: 12px; align-items: center"
+          >
+            <!-- Import Button (Triggers the hidden file input below) -->
+            <button
+              class="action-icon-btn"
+              onclick="document.getElementById('playlistFilePicker').click()"
+              title="Import Playlist"
+            >
+              <i class="fa-solid fa-file-import"></i>
+            </button>
+
+            <!-- Export Button -->
+            <button
+              class="action-icon-btn"
+              onclick="exportPlaylist()"
+              title="Export Playlist"
+            >
+              <i class="fa-solid fa-file-export"></i>
+            </button>
+
+            <button class="clear-btn" onclick="clearPlaylist()">
+              Clear All
+            </button>
+
+            <!-- Hidden File Input System -->
+            <input
+              type="file"
+              id="playlistFilePicker"
+              accept=".json"
+              style="display: none"
+              onchange="handleFileImport(event)"
+            />
+          </div>
         </div>
         <div id="tracksContainer"></div>
       </div>

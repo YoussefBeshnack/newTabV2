@@ -391,3 +391,75 @@ bgUrlInput.addEventListener("keydown", (e) => {
 
 // Run immediately to load user preferences on start
 initBackgroundEngine();
+
+// --- PLAYLIST IMPORT / EXPORT SYSTEM ---
+
+// 1. EXPORT: Packs your current queue into a file and triggers a browser download
+function exportPlaylist() {
+  if (playlist.length === 0) {
+    alert("Your playlist is empty! Add some tracks before exporting.");
+    return;
+  }
+
+  // Convert current runtime playlist array into string format
+  const dataStr = JSON.stringify(playlist, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  // Create an invisible anchor tag to click programmatically
+  const downloadAnchor = document.createElement("a");
+  downloadAnchor.href = url;
+  downloadAnchor.download = "my-lofi-playlist.json";
+  document.body.appendChild(downloadAnchor);
+
+  downloadAnchor.click();
+
+  // Cleanup browser memory traces
+  document.body.removeChild(downloadAnchor);
+  URL.revokeObjectURL(url);
+}
+
+// 2. IMPORT: Intercepts the hidden input picker upload event
+function handleFileImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const importedData = JSON.parse(e.target.result);
+
+      // Safety Validation: Make sure the uploaded file is actually a structured array list
+      if (Array.isArray(importedData)) {
+        // Overwrite active runtime array reference
+        playlist = importedData;
+        currentTrackIndex = 0; // Reset focus back to the beginning track
+
+        // Save the updated list permanently to storage
+        localStorage.setItem("myYoutubePlaylist", JSON.stringify(playlist));
+
+        // Synchronize and redraw all components
+        renderPlaylistUI();
+        updateCarousel();
+
+        // Safely load the first track into the media engine without breaking autoplay rules
+        if (ytPlayer && playlist.length > 0) {
+          loadTrack(0, false);
+        }
+
+        alert("Playlist imported perfectly!");
+      } else {
+        alert(
+          "Oops! The file structure doesn't match a standard playlist format.",
+        );
+      }
+    } catch (err) {
+      alert("Error reading file. Make sure it's a valid JSON file!");
+    }
+  };
+
+  reader.readAsText(file);
+
+  // Reset selector value tracking so users can repeatedly re-upload identical filenames later
+  event.target.value = "";
+}
