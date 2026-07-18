@@ -463,3 +463,43 @@ function handleFileImport(event) {
   // Reset selector value tracking so users can repeatedly re-upload identical filenames later
   event.target.value = "";
 }
+
+// --- BOTTOM LEFT FLOATING VOLUME PANEL ENGINE ---
+
+let isMuted = false;
+let preMuteVolume = 80;
+
+// 1. Toggles open/close state of the slider window
+function toggleVolumePanel() {
+  const container = document.getElementById("volSliderContainer");
+  container.classList.toggle("active");
+}
+
+// 2. Volume modification engine linked to the player
+function handleVolumeChange(value) {
+  if (!ytPlayer) return;
+
+  const volume = parseInt(value);
+  ytPlayer.setVolume(volume);
+
+  if (volume > 0 && isMuted) {
+    isMuted = false;
+    ytPlayer.unMute();
+  }
+
+  updateVolumeIcon(volume);
+}
+
+// 3. Dynamically swap fontAwesome icon classes based on level variables
+function updateVolumeIcon(volume) {
+  const icon = document.getElementById("volBtnIcon");
+  if (!icon) return;
+
+  if (volume == 0 || isMuted) {
+    icon.className = "fa-solid fa-volume-xmark";
+  } else if (volume < 50) {
+    icon.className = "fa-solid fa-volume-low";
+  } else {
+    icon.className = "fa-solid fa-volume-high";
+  }
+}

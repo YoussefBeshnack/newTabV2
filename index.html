@@ -148,6 +148,32 @@
       </button>
     </div>
 
+    <!-- Floating Volume Control Panel (Bottom Left Corner Engine) -->
+    <div id="volumePanel" class="vol-sliding-panel">
+      <!-- The Vertical Slider Container (Hidden by default, slides out upward) -->
+      <div id="volSliderContainer" class="vol-slider-container">
+        <input
+          type="range"
+          id="volumeSlider"
+          min="0"
+          max="100"
+          value="100"
+          orient="vertical"
+          oninput="handleVolumeChange(this.value)"
+        />
+      </div>
+
+      <!-- Main Toggle Button sharing the exact specifications of the background layout -->
+      <button
+        id="volChangerBtn"
+        class="bg-panel-toggle volume-toggle-override"
+        onclick="toggleVolumePanel()"
+        title="Volume Controls"
+      >
+        <i class="fa-solid fa-volume-high" id="volBtnIcon"></i>
+      </button>
+    </div>
+
     <script src="js/index.js"></script>
   </body>
 </html>

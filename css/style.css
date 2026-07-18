@@ -593,3 +593,122 @@ button:hover {
 .bg-panel-toggle i {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 }
+
+/* Mirror container anchoring the entire volume system to the bottom-left */
+.vol-sliding-panel {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 50px; /* Perfectly matches the 50px button bounding box dimensions */
+  height: 50px;
+  z-index: 1000;
+}
+
+/* Force the volume version of the toggle button to sit at the left edge */
+.volume-toggle-override {
+  left: 0 !important;
+  right: auto !important;
+}
+
+/* 1. The Glass Pill Container */
+.vol-slider-container {
+  position: absolute;
+  bottom: 65px;
+  left: 50%;
+  transform: translateX(-50%) translateY(15px);
+  width: 34px;
+  height: 130px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Premium Glass Aesthetics */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  overflow: hidden; /* Keeps things contained */
+}
+
+.vol-slider-container.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 2. The Rotated Slider Reset */
+#volumeSlider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  cursor: pointer;
+
+  /* The Trick: Make its width match the height of the pill, then flip it vertically */
+  width: 90px;
+  height: 20px;
+  transform: rotate(270deg);
+
+  /* Reset any browser weirdness */
+  box-shadow: none;
+}
+
+/* 3. The Track Line (styled horizontally, rotated vertically) */
+#volumeSlider::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px; /* Thickness of the track line */
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  border: none;
+}
+
+/* 4. The Thumb Dot (styled horizontally, perfectly centered) */
+#volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+
+  /* Perfect horizontal track centering formula */
+  margin-top: -4px;
+
+  transition: transform 0.15s ease;
+}
+
+#volumeSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+/* 5. Firefox Support Rules */
+#volumeSlider::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  border: none;
+}
+
+#volumeSlider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
