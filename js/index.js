@@ -503,5 +503,3 @@ function updateVolumeIcon(volume) {
     icon.className = "fa-solid fa-volume-high";
   }
 }
-
-updateVolumeIcon(preMuteVolume);
