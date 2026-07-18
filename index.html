@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Tab</title>
+    <link rel="icon" href="/assets/favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="css/all.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- <div class="brand-header">
+      <h1>YoDark Player</h1>
+    </div> -->
+
+    <div class="main-workspace">
+      <!-- Management Inputs Container -->
+      <div class="glass-panel management-card">
+        <div class="input-group">
+          <input
+            type="text"
+            id="urlInput"
+            placeholder="Paste YouTube / YT Music link here..."
+          />
+          <button onclick="addTrack()">Add</button>
+        </div>
+      </div>
+
+      <!-- Cover Flow Deck Dynamic Layout Viewport -->
+      <div class="carousel-viewport">
+        <div class="carousel-track" id="carouselTrack">
+          <div class="carousel-card card-center">
+            <div class="card-content">
+              <div class="card-title">No Tracks Loaded</div>
+              <div class="card-subtitle">Queue is empty</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Glass UI Control Panel Container -->
+      <div class="glass-panel floating-deck">
+        <div class="media-controls">
+          <button class="icon-btn" onclick="playPrevious()">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button
+            class="icon-btn main-play"
+            id="playBtn"
+            onclick="togglePlayback()"
+          >
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button class="icon-btn" onclick="playNext()">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+        </div>
+
+        <div class="now-playing-badge">
+          <div class="mini-dot" id="playbackDot"></div>
+          <div id="currentInfo">Loading engine...</div>
+        </div>
+
+        <div class="utility-controls">
+          <div class="youtube">
+            <a
+              href="https://www.youtube.com/"
+              class="fa-brands fa-youtube"
+              target="_blank"
+            ></a>
+            <a
+              href="https://music.youtube.com/"
+              class="fa-solid fa-music"
+              target="_blank"
+            ></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Queue List Container Panel -->
+      <div class="glass-panel queue-panel">
+        <div class="queue-header">
+          <h3>Tracks Queue</h3>
+          <button class="clear-btn" onclick="clearPlaylist()">Clear All</button>
+        </div>
+        <div id="tracksContainer"></div>
+      </div>
+    </div>
+
+    <div id="yt-player-container"></div>
+
+    <div class="footer-credit">© 2026 - YoDark Studio</div>
+
+    <!-- Sliding & Stacking Background Customizer Panel -->
+    <div id="bgPanel" class="bg-sliding-panel">
+      <!-- Recent Backgrounds Vertical Stack -->
+      <div id="bgHistoryStack" class="bg-history-stack"></div>
+
+      <div class="bg-input-container">
+        <input
+          type="text"
+          id="bgUrlInput"
+          placeholder="Paste background image URL here..."
+        />
+        <button onclick="saveCustomBackground()">Apply</button>
+      </div>
+
+      <button
+        id="bgChangerBtn"
+        class="bg-panel-toggle"
+        onclick="toggleBgPanel()"
+      >
+        <i class="fa-solid fa-image"></i>
+      </button>
+    </div>
+
+    <script src="js/index.js"></script>
+  </body>
+</html>
