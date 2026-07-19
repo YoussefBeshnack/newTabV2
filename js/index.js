@@ -211,13 +211,14 @@ function onPlayerStateChange(event) {
     playbackDot.classList.remove("playing");
   }
   if (event.data === YT.PlayerState.ENDED) {
-    if (currentTrackIndex + 1 < playlist.length) {
-      loadTrack(currentTrackIndex + 1, true);
-    } else {
-      currentInfo.textContent = "Playlist completed.";
-      playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-      playbackDot.classList.remove("playing");
-    }
+    loadTrack((currentTrackIndex + 1) % playlist.length, true);
+    // if (currentTrackIndex + 1 < playlist.length) {
+    //   loadTrack(currentTrackIndex + 1, true);
+    // } else {
+    //   currentInfo.textContent = "Playlist completed.";
+    //   playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
+    //   playbackDot.classList.remove("playing");
+    // }
   }
 }
 
