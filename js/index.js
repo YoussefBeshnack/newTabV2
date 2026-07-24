@@ -1,6 +1,7 @@
 let playlist = [];
 let currentTrackIndex = 0;
 let ytPlayer = null;
+let hasStartedPlaying = false; // add near your other top-level state vars
 
 const urlInput = document.getElementById("urlInput");
 const tracksContainer = document.getElementById("tracksContainer");
@@ -96,55 +97,104 @@ function renderPlaylistUI() {
   });
 }
 
+let cardElements = new Map(); // index -> card element
+
+function getPositionClass(offset) {
+  switch (offset) {
+    case 0:
+      return "card-center";
+    case -1:
+      return "card-left";
+    case 1:
+      return "card-right";
+    case -2:
+      return "card-far-left";
+    case 2:
+      return "card-far-right";
+    default:
+      return "card-hidden";
+  }
+}
+
+function createCard(track, index) {
+  const card = document.createElement("div");
+  card.className = "carousel-card card-hidden"; // starting state
+  card.dataset.index = index;
+
+  const thumbUrl = `https://img.youtube.com/vi/${track.id}/mqdefault.jpg`;
+  card.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.85)), url('${thumbUrl}')`;
+  card.style.backgroundSize = "cover";
+  card.style.backgroundPosition = "center";
+
+  card.innerHTML = `
+    <div class="card-content">
+      <div class="card-title">${track.name}</div>
+      <div class="card-subtitle">YouTube Track</div>
+    </div>
+  `;
+
+  card.addEventListener("click", () => {
+    const i = parseInt(card.dataset.index, 10);
+    if (i !== currentTrackIndex) loadTrack(i, true);
+  });
+
+  return card;
+}
+
 function updateCarousel() {
-  carouselTrack.innerHTML = "";
   if (playlist.length === 0) {
     carouselTrack.innerHTML = `
-            <div class="carousel-card card-center">
-              <div class="card-content">
-                <div class="card-title">No Tracks Loaded</div>
-                <div class="card-subtitle">Queue is empty</div>
-              </div>
-            </div>`;
+      <div class="carousel-card card-center">
+        <div class="card-content">
+          <div class="card-title">No Tracks Loaded</div>
+          <div class="card-subtitle">Queue is empty</div>
+        </div>
+      </div>`;
+    cardElements.clear();
     return;
   }
 
+  // Remove any leftover/orphan nodes not tracked by cardElements
+  // (e.g. the initial "No Tracks Loaded" placeholder from the HTML)
+  const trackedNodes = new Set(cardElements.values());
+  Array.from(carouselTrack.children).forEach((child) => {
+    if (!trackedNodes.has(child)) {
+      child.remove();
+    }
+  });
+
+  // Drop any cards whose index no longer exists in the playlist
+  cardElements.forEach((el, key) => {
+    if (key >= playlist.length) {
+      el.remove();
+      cardElements.delete(key);
+    }
+  });
+
   playlist.forEach((track, index) => {
-    const card = document.createElement("div");
-    let positionClass = "card-hidden";
+    let card = cardElements.get(index);
+
+    if (!card) {
+      card = createCard(track, index);
+      carouselTrack.appendChild(card);
+      cardElements.set(index, card);
+      void card.offsetWidth;
+    } else {
+      const titleEl = card.querySelector(".card-title");
+      if (titleEl && titleEl.textContent !== track.name) {
+        titleEl.textContent = track.name;
+      }
+    }
+
     const offset = index - currentTrackIndex;
-
-    if (offset === 0) positionClass = "card-center";
-    else if (offset === -1) positionClass = "card-left";
-    else if (offset === 1) positionClass = "card-right";
-    else if (offset === -2) positionClass = "card-far-left";
-    else if (offset === 2) positionClass = "card-far-right";
-
-    card.className = `carousel-card ${positionClass}`;
-
-    // Optional: Add custom fetched background thumbnail fallback from YT API structure natively
-    const thumbUrl = `https://img.youtube.com/vi/${track.id}/mqdefault.jpg`;
-    card.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.85)), url('${thumbUrl}')`;
-    card.style.backgroundSize = "cover";
-    card.style.backgroundPosition = "center";
-
-    card.innerHTML = `
-            <div class="card-content">
-              <div class="card-title">${track.name}</div>
-              <div class="card-subtitle">YouTube Track</div>
-            </div>
-          `;
-
-    card.addEventListener("click", () => {
-      if (index !== currentTrackIndex) loadTrack(index, true);
-    });
-    carouselTrack.appendChild(card);
+    card.className = `carousel-card ${getPositionClass(offset)}`;
   });
 }
 
 function loadTrack(index, autoPlay = true) {
   if (index < 0 || index >= playlist.length || !ytPlayer) return;
   currentTrackIndex = index;
+  hasStartedPlaying = false; // reset — we haven't confirmed real playback yet
 
   renderPlaylistUI();
   updateCarousel();
@@ -189,6 +239,8 @@ function playPrevious() {
 
 function onPlayerStateChange(event) {
   if (event.data === YT.PlayerState.PLAYING) {
+    hasStartedPlaying = true; // confirms this track genuinely played
+
     playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
     playbackDot.classList.add("playing");
 
@@ -206,19 +258,24 @@ function onPlayerStateChange(event) {
       updateCarousel();
     }
   }
+
   if (event.data === YT.PlayerState.PAUSED) {
     playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
     playbackDot.classList.remove("playing");
   }
+
   if (event.data === YT.PlayerState.ENDED) {
+    if (!hasStartedPlaying) {
+      // This track never actually played — treat it like an error instead
+      // of silently chaining into another instant "ended" -> infinite loop.
+      console.warn(
+        "Track ended without playing, likely blocked/unavailable:",
+        playlist[currentTrackIndex],
+      );
+      onPlayerError({ data: "phantom-end" });
+      return;
+    }
     loadTrack((currentTrackIndex + 1) % playlist.length, true);
-    // if (currentTrackIndex + 1 < playlist.length) {
-    //   loadTrack(currentTrackIndex + 1, true);
-    // } else {
-    //   currentInfo.textContent = "Playlist completed.";
-    //   playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-    //   playbackDot.classList.remove("playing");
-    // }
   }
 }
 
@@ -226,9 +283,16 @@ function onPlayerError(event) {
   console.error("YT Player Error:", event.data);
   currentInfo.textContent = "Error playing track. Skipping...";
   playbackDot.classList.remove("playing");
+
   setTimeout(() => {
-    if (currentTrackIndex + 1 < playlist.length)
-      loadTrack(currentTrackIndex + 1, true);
+    const nextIndex = (currentTrackIndex + 1) % playlist.length;
+    // Stop the cascade if we've wrapped all the way back with no valid track found
+    if (playlist.length > 1 && nextIndex !== currentTrackIndex) {
+      loadTrack(nextIndex, true);
+    } else {
+      currentInfo.textContent = "No playable tracks found.";
+      playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
+    }
   }, 2000);
 }
 
